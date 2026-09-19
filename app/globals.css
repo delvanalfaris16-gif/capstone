@@ -1,0 +1,45 @@
+/* Hallmark · genre: modern-minimal · macrostructure: Workbench + Split Studio · design-system: design.md · designed-as-app */
+/* Hallmark · pre-emit critique: P5 H5 E4 S5 R5 V4 */
+@import "../tokens.css";
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html { overflow-x: clip; }
+body { overflow-x: clip; }
+
+body {
+  background: var(--color-paper);
+  color: var(--color-ink);
+  font-family: var(--font-body);
+  -webkit-font-smoothing: antialiased;
+}
+
+.font-display { font-family: var(--font-display); overflow-wrap: anywhere; min-width: 0; }
+.tnum { font-variant-numeric: tabular-nums; }
+
+::selection { background: var(--color-accent); color: var(--color-accent-ink); }
+
+/* View-switch reveal: single orchestrated moment */
+@keyframes view-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: none; }
+}
+.view-in { animation: view-in var(--dur-short) var(--ease-out); }
+
+/* Focus ring: instant, never animated */
+:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 150ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 150ms !important;
+  }
+  .view-in { animation: view-in-reduced 150ms linear forwards; }
+  @keyframes view-in-reduced { to { opacity: 1; transform: none; } }
+}
