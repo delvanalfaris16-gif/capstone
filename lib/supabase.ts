@@ -1,9 +1,31 @@
-import { createClient } from "@supabase/supabase-js";
+import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 
-const url = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const anon = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
+let _client: SupabaseClient | null = null;
+function getClient(): SupabaseClient {
+  if (!_client) {
+    const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const anon = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+    if (!url || !anon) {
+      throw new Error(
+        "Supabase env belum di-set. Tambah NEXT_PUBLIC_SUPABASE_URL + NEXT_PUBLIC_SUPABASE_ANON_KEY di Vercel > Settings > Environment Variables, lalu Redeploy."
+      );
+    }
+    _client = createClient(url, anon);
+  }
+  return _client;
+}
 
-export const supabase = createClient(url, anon);
+/**
+ * Proxy lazy: createClient() baru berjalan saat properti pertama diakses
+ * (runtime browser), BUKAN saat modul di-import (build/prerender).
+ * Method di-bind agar konteks `this` internal supabase-js tidak rusak.
+ */
+export const supabase: SupabaseClient = new Proxy({} as SupabaseClient, {
+  get: (_t, prop) => {
+    const value = (getClient() as unknown as Record<string | symbol, unknown>)[prop];
+    return typeof value === "function" ? value.bind(getClient()) : value;
+  },
+});
 
 export type Role = "admin_kasir" | "orangtua";
 /** Kanonikalisasi role: sesi lama (admin/kasir/guru) dipetakan ke role aktif. */
